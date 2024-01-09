@@ -21,13 +21,9 @@ app.get('/api/hotels', async (req, res) => {
 });
 
 // API to get a single hotel
-app.get('/api/hotels/:id', (req, res) => {
+app.get('/api/hotels/:id', async (req, res) => {
     const id = req.params.id;
-    const hotel = hotels.find((hotel) => hotel.id === parseInt(id));
-    if (!hotel) {
-        res.status(404).send('The hotel with the given ID was not found');
-    }
-    res.json(hotel);
+    const hotel = await Hotel.findById(id);
 });
 
 // API to add a new hotel
