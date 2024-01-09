@@ -1,75 +1,36 @@
+require('dotenv').config(); // load environment variables
 const express = require('express'); // import express
-
+const mongoose = require('mongoose'); // import mongoose
 const app = express(); // initialize express
 
-// In-file database
-const hotels = [
-    {
-        id: 1,
-        name: 'Hotel 1',
-        city: 'City 1',
-        price: 1000,
-        rooms: 1,
-        image: 'https://via.placeholder.com/150'
-    },
-    {
-        id: 2,
-        name: 'Hotel 2',
-        city: 'City 2',
-        price: 2000,
-        rooms: 2,
-        image: 'https://via.placeholder.com/150'
-    },
-    {
-        id: 3,
-        name: 'Hotel 3',
-        city: 'City 3',
-        price: 3000,
-        rooms: 3,
-        image: 'https://via.placeholder.com/150'
-    },
-    {
-        id: 4,
-        name: 'Hotel 4',
-        city: 'City 4',
-        price: 4000,
-        rooms: 4,
-        image: 'https://via.placeholder.com/150'
-    },
-    {
-        id: 5,
-        name: 'Hotel 5',
-        city: 'City 5',
-        price: 5000,
-        rooms: 5,
-        image: 'https://via.placeholder.com/150'
-    }
-];
+mongoose.connect(process.env.MONGO_URL).then(() => {
+    console.log('Connected to MongoDB');
+})
+
+const Hotel = require('./models/hotel'); // import Hotel model. Hotel is a mongoose model. Using this we can talk to the Mongoose DB.
+
 
 app.use(express.json()); // enable parsing JSON data from request body.
 
 
 // API to get all hotels
-app.get('/api/hotels', (req, res) => {
+app.get('/api/hotels', async(req, res) => {
+    const hotels = await Hotel.find();
     res.json(hotels);
 });
 
 // API to get a single hotel
-app.get('/api/hotels/:id', (req, res) => {
+app.get('/api/hotels/:id', async(req, res) => {
     const id = req.params.id;
-    const hotel = hotels.find((hotel) => hotel.id === parseInt(id));
-    if (!hotel) {
-        res.status(404).send('The hotel with the given ID was not found');
-    }
+    const hotel = await Hotel.findById(id);
     res.json(hotel);
 });
 
 // API to add a new hotel
-app.post('/api/hotels', (req, res) => {
+app.post('/api/hotels', async(req, res) => {
     const hotel = req.body;
-    hotel.id = hotels.length + 1;
-    hotels.push(hotel);
-    res.json(hotel);
+    const dbHotel = await Hotel.create(hotel);
+    res.json(dbHotel);
 });
 
 // create a route for the app
